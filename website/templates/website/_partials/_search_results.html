@@ -1,0 +1,80 @@
+{% load static i18n validator %}
+<div class="w-100">
+    <table class="table table-hover table-expandable table-striped">
+    <thead>
+      <tr>
+            <th class="w-10 align-top">Company</th>
+            <th class="w-10 align-top">Name of Drug</th>
+            <th class="w-10 align-top">Other name of Drug</th>
+            <th class="w-10 align-top">Potential Indication</th>
+            <th class="align-top">Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% if models.count > 0 %}
+      {% for object in models %}
+      <tr data-toggle="collapse" data-target="#accordion-{{object.id}}" class="clickable">
+        <td class="w-10 align-top">{{ object.company }}</td>
+        <td class="w-10 align-top">{{ object.name }}</td>
+        <td class="w-10 align-top">{% if object.sub_name %}{{ object.sub_name }}{% else %}-{% endif %}</td>
+        <td class="w-10 align-top">{% if object.indication %}{{ object.indication }}{% else %}-{% endif %}</td>
+          <td>
+              {% get_phase object.phase as phase %}
+              <ul class="progress-tracker">
+                <li {% if phase >= 1 %} class="progress-step is-complete" {% else %} class="progress-step" {% endif %}>
+                    <span class="progress-marker">1</span>
+                </li>
+                <li {% if phase >= 2 %} class="progress-step is-complete" {% else %} class="progress-step" {% endif %}>
+                    <span class="progress-marker">2</span>
+                </li>
+                <li {% if phase >= 3 %} class="progress-step is-complete" {% else %} class="progress-step" {% endif %}>
+                    <span class="progress-marker">3</span>
+                </li>
+                <li {% if phase >= 4 %} class="progress-step is-complete" {% else %} class="progress-step" {% endif %}>
+                    <span class="progress-marker">4</span>
+                </li>
+              </ul>
+          </td>
+      </tr>
+
+      <tr>
+          <td class="w-10 align-top"></td>
+          <td class="w-10 align-top"></td>
+          <td colspan="3" class="w-80 align-top">
+              <div id="accordion-{{object.id}}" class="collapse">
+                  {% if object.studies.all.count == 0 %}
+                  <div style="font-style:italic;">
+                      No Trial info yet.
+                  </div>
+                  {% endif %}
+                  {% for study in object.studies.all %}
+                <div>
+                <ul>
+                    <li>
+                        <span><b>NCT Number:</b> {{study.nct_id}}</span>
+                    </li>
+                    <li>
+                        <span><b>Status:</b> {{study.status}}</span>
+                    </li>
+                    <li>
+                        <span><b>Phase:</b> {{study.phase}}</span>
+                    </li>
+                    <li>
+                        <span><b>URL:</b> <a href="{{study.url}}">{{study.url}}</a></span>
+                    </li>
+                </ul>
+                </div>
+                  <div class="dropdown-divider"></div>
+                  {% endfor %}
+              </div>
+          </td>
+      </tr>
+
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+<div style="margin-top: 100px">
+    <button type="button" class="btn btn-primary" id="export-csv"> {% trans "Export to CSV" %}</button>
+</div>

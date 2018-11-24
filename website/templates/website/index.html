@@ -1,0 +1,123 @@
+{% extends "website/base.html" %}
+{% load static %}
+{% block title %}Homepage {{ block.super }}{% endblock %}
+{% block headcontent_end %}
+    <link rel="stylesheet" href="{% static 'css/progress-tracker.css' %}" type="text/css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        $( "#drug-name" ).autocomplete({
+          source: "{% url 'drug-autocomplete' %}",
+        });
+        $( "#company-name" ).autocomplete({
+          source: "{% url 'company-autocomplete' %}",
+        });
+        $( "#status-state" ).autocomplete({
+          source: "{% url 'status-autocomplete' %}",
+        });
+    } );
+    </script>
+    <script type="text/javascript">
+          $( function() {
+            $(document).on('click', "#search", function(){
+              var d = $("#drug-name").val();
+              var c = $("#company-name").val();
+              var s = $("#status-state").val();
+              $.ajax({
+                  url: '/api/search/',
+                  type: 'post',
+                  data: {
+                      d: d,
+                      c: c,
+                      s: s
+                  },
+                  headers: {
+                      "X-CSRFToken": '{{ csrf_token }}'
+                  },
+                  dataType: 'json',
+                  success: function (data) {
+                      console.log(data);
+                      $("#search-results").html(data.drugs);
+                  }
+              });
+            });
+          } );
+    </script>
+    <script type="text/javascript">
+          $( function() {
+            $(document).on('click', "#export-csv", function(){
+              var d = $("#drug-name").val();
+              var c = $("#company-name").val();
+              var s = $("#status-state").val();
+              $.ajax({
+                  url: '/api/export/',
+                  type: 'post',
+                  data: {
+                      d: d,
+                      c: c,
+                      s: s
+                  },
+                  headers: {
+                      "X-CSRFToken": '{{ csrf_token }}'
+                  },
+                  dataType: 'json',
+                  success: function (data) {
+                      console.log(data)
+                      window.location.href = data.url;
+                  }
+              });
+            });
+          } );
+    </script>
+    <script type="text/javascript">
+          $( function() {
+            $('.dropdown-menu').on({
+                "click":function(e){
+                  e.stopPropagation();
+                }
+            });
+          } );
+    </script>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row" style="margin-top:2.5em;">
+        <div class="col text-center">
+            <img src="{% static 'img/image.png' %}" alt="PharmaTrack" class="img-fluid">
+        </div>
+    </div>
+	<div class="row" style="margin-top:2.5em;">
+		<div class="col-md-12">
+            <div class="input-group" id="adv-search">
+                <input type="text" class="form-control" placeholder="Search for drugs" id="drug-name" name="d"/>
+                <div class="input-group-btn">
+                    <div class="btn-group" role="group">
+                        <div class="dropdown dropdown-lg">
+                            <button type="button" class="btn btn-default dropdown-toggle border" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></button>
+                            <div class="dropdown-menu dropdown-menu-right" role="menu" style="left: 2.5em">
+                                  <div class="form-group">
+                                    <label for="contain">Company</label>
+                                    <input class="form-control" type="text" id="company-name" name="c"/>
+                                  </div>
+                                  <div class="form-group">
+                                    <label for="contain">Status</label>
+                                    <input class="form-control" type="text" id="status-state" name="s"/>
+                                  </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="search"><span class="fas fa-search" aria-hidden="true"></span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top:2.5em;">
+        <div class="col-md-12">
+            <div id="search-results">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
